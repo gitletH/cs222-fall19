@@ -1,27 +1,21 @@
 #include <iostream>
-#include <string>
 #include <cassert>
-#include <sys/stat.h>
-#include <stdlib.h> 
-#include <string.h>
+#include <cstdlib>
 #include <stdexcept>
-#include <stdio.h> 
 
 #include "pfm.h"
-#include "rbfm.h"
 #include "test_util.h"
 
 using namespace std;
 
-int RBFTest_4(PagedFileManager *pfm)
-{
+int RBFTest_4(PagedFileManager &pfm) {
     // Functions Tested:
     // 1. Open File
     // 2. Append Page
     // 3. Get Number Of Pages
     // 4. Get Counter Values
     // 5. Close File
-    cout << endl << "***** In RBF Test Case 4 *****" << endl;
+    cout << endl << "***** In RBF Test Case 04 *****" << endl;
 
     RC rc;
     string fileName = "test3";
@@ -32,61 +26,57 @@ int RBFTest_4(PagedFileManager *pfm)
     unsigned readPageCount1 = 0;
     unsigned writePageCount1 = 0;
     unsigned appendPageCount1 = 0;
-    
+
     // Open the file "test3"
     FileHandle fileHandle;
-    rc = pfm->openFile(fileName, fileHandle);
+    rc = pfm.openFile(fileName, fileHandle);
     assert(rc == success && "Opening the file should not fail.");
 
     // Collect before counters
     rc = fileHandle.collectCounterValues(readPageCount, writePageCount, appendPageCount);
-    if(rc != success)
-    {
+    if (rc != success) {
         cout << "[FAIL] collectCounterValues() failed. Test Case 4 failed." << endl;
-        rc = pfm->closeFile(fileHandle);
+        pfm.closeFile(fileHandle);
         return -1;
     }
-    
+
     // Append the first page
     void *data = malloc(PAGE_SIZE);
-    for(unsigned i = 0; i < PAGE_SIZE; i++)
-    {
-        *((char *)data+i) = i % 96 + 30;
+    for (unsigned i = 0; i < PAGE_SIZE; i++) {
+        *((char *) data + i) = i % 96 + 30;
     }
     rc = fileHandle.appendPage(data);
     assert(rc == success && "Appending a page should not fail.");
-   
+
     // collect after counters
     rc = fileHandle.collectCounterValues(readPageCount1, writePageCount1, appendPageCount1);
-    if(rc != success)
-    {
+    if (rc != success) {
         cout << "[FAIL] collectCounterValues() failed. Test Case 4 failed." << endl;
-        rc = pfm->closeFile(fileHandle);
+        pfm.closeFile(fileHandle);
         return -1;
     }
-    cout << "before:R W A - " << readPageCount << " " << writePageCount << " " << appendPageCount << " after:R W A - " << readPageCount1 << " " << writePageCount1 << " " << appendPageCount1 << endl;
+    cout << "before:R W A - " << readPageCount << " " << writePageCount << " " << appendPageCount << " after:R W A - "
+         << readPageCount1 << " " << writePageCount1 << " " << appendPageCount1 << endl;
     assert(appendPageCount1 > appendPageCount && "The appendPageCount should have been increased.");
-       
+
     // Get the number of pages
     unsigned count = fileHandle.getNumberOfPages();
-    assert(count == (unsigned)1 && "The count should be one at this moment.");
+    assert(count == (unsigned) 1 && "The count should be one at this moment.");
 
     // Close the file "test3"
-    rc = pfm->closeFile(fileHandle);
+    rc = pfm.closeFile(fileHandle);
     assert(rc == success && "Closing the file should not fail.");
 
     free(data);
 
-    cout << "RBF Test Case 4 Finished! The result will be examined." << endl << endl;
+    cout << "RBF Test Case 04 Finished! The result will be examined." << endl << endl;
 
     return 0;
 }
 
-int main()
-{
+int main() {
     // To test the functionality of the paged file manager
-    PagedFileManager *pfm = PagedFileManager::instance();
-    
-    RC rcmain = RBFTest_4(pfm);
-    return rcmain;
+    PagedFileManager &pfm = PagedFileManager::instance();
+
+    return RBFTest_4(pfm);
 }

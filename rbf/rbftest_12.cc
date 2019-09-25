@@ -1,12 +1,8 @@
 #include <iostream>
-#include <fstream>
-#include <string>
 #include <cassert>
-#include <sys/stat.h>
-#include <stdlib.h> 
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 #include <stdexcept>
-#include <stdio.h> 
 
 #include "pfm.h"
 #include "rbfm.h"
@@ -14,7 +10,7 @@
 
 using namespace std;
 
-int RBFTest_12(RecordBasedFileManager *rbfm) {
+int RBFTest_12(RecordBasedFileManager &rbfm) {
     // Functions tested
     // 1. Open Record-Based File
     // 2. Read Multiple Records
@@ -26,7 +22,7 @@ int RBFTest_12(RecordBasedFileManager *rbfm) {
 
     // Open the file "test11"
     FileHandle fileHandle;
-    rc = rbfm->openFile(fileName, fileHandle);
+    rc = rbfm.openFile(fileName, fileHandle);
     assert(rc == success && "Opening the file should not fail.");
 
     void *record = malloc(1000);
@@ -36,8 +32,9 @@ int RBFTest_12(RecordBasedFileManager *rbfm) {
     vector<Attribute> recordDescriptor;
     createLargeRecordDescriptor2(recordDescriptor);
 
-    for (unsigned i = 0; i < recordDescriptor.size(); i++) {
-        cout << "Attr Name: " << recordDescriptor[i].name << " Attr Type: " << (AttrType)recordDescriptor[i].type << " Attr Len: " << recordDescriptor[i].length << endl;
+    for (Attribute &i : recordDescriptor) {
+        cout << "Attr Name: " << i.name << " Attr Type: " << (AttrType) i.type
+             << " Attr Len: " << i.length << endl;
     }
 
     vector<RID> rids;
@@ -50,10 +47,10 @@ int RBFTest_12(RecordBasedFileManager *rbfm) {
     unsigned slotNum;
 
     if (ridsFileRead.is_open()) {
-        ridsFileRead.seekg(0,ios::beg);
+        ridsFileRead.seekg(0, ios::beg);
         for (int i = 0; i < numRecords; i++) {
-            ridsFileRead.read(reinterpret_cast<char*>(&pageNum), sizeof(unsigned));
-            ridsFileRead.read(reinterpret_cast<char*>(&slotNum), sizeof(unsigned));
+            ridsFileRead.read(reinterpret_cast<char *>(&pageNum), sizeof(unsigned));
+            ridsFileRead.read(reinterpret_cast<char *>(&slotNum), sizeof(unsigned));
             if (i % 1000 == 0) {
                 cout << "loaded RID #" << i << ": " << pageNum << ", " << slotNum << endl;
             }
@@ -68,15 +65,15 @@ int RBFTest_12(RecordBasedFileManager *rbfm) {
 
     // NULL field indicator
     int nullFieldsIndicatorActualSize = getActualByteForNullsIndicator(recordDescriptor.size());
-    unsigned char *nullsIndicator = (unsigned char *) malloc(nullFieldsIndicatorActualSize);
+    auto *nullsIndicator = (unsigned char *) malloc(nullFieldsIndicatorActualSize);
     memset(nullsIndicator, 0, nullFieldsIndicatorActualSize);
 
     // Compare records from the disk read with the record created from the method
     for (int i = 0; i < numRecords; i++) {
         memset(record, 0, 1000);
         memset(returnedData, 0, 1000);
-        rc = rbfm->readRecord(fileHandle, recordDescriptor, rids[i],
-                returnedData);
+        rc = rbfm.readRecord(fileHandle, recordDescriptor, rids[i],
+                              returnedData);
         if (rc != success) {
             return -1;
         }
@@ -94,23 +91,25 @@ int RBFTest_12(RecordBasedFileManager *rbfm) {
 
 
     // Close the file
-    rc = rbfm->closeFile(fileHandle);
+    rc = rbfm.closeFile(fileHandle);
     assert(rc == success && "Closing the file should not fail.");
 
     free(record);
     free(returnedData);
 
     cout << "RBF Test Case 12 Finished! The result will be examined." << endl << endl;
-    
+
+    free(nullsIndicator);
     return 0;
 }
 
 int main() {
 
     // To test the functionality of the record-based file manager
-    RecordBasedFileManager *rbfm = RecordBasedFileManager::instance(); 
+    RecordBasedFileManager &rbfm = RecordBasedFileManager::instance();
 
-    RC rcmain = RBFTest_12(rbfm);
-
-    return rcmain;
+    RC rc = RBFTest_12(rbfm);
+    remove("test11");
+    remove("test11rids");
+    return rc;
 }

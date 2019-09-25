@@ -1,12 +1,9 @@
 #include <iostream>
-#include <fstream>
-#include <string>
 #include <cassert>
-#include <sys/stat.h>
-#include <stdlib.h> 
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 #include <stdexcept>
-#include <stdio.h> 
+#include <cstdio>
 
 #include "pfm.h"
 #include "rbfm.h"
@@ -14,7 +11,7 @@
 
 using namespace std;
 
-int RBFTest_11(RecordBasedFileManager *rbfm) {
+int RBFTest_11(RecordBasedFileManager &rbfm) {
     // Functions tested
     // 1. Create Record-Based File
     // 2. Open Record-Based File
@@ -26,7 +23,7 @@ int RBFTest_11(RecordBasedFileManager *rbfm) {
     string fileName = "test11";
 
     // Create a file named "test11"
-    rc = rbfm->createFile(fileName);
+    rc = rbfm.createFile(fileName);
     assert(rc == success && "Creating the file should not fail.");
 
     rc = createFileShouldSucceed(fileName);
@@ -34,7 +31,7 @@ int RBFTest_11(RecordBasedFileManager *rbfm) {
 
     // Open the file "test11"
     FileHandle fileHandle;
-    rc = rbfm->openFile(fileName, fileHandle);
+    rc = rbfm.openFile(fileName, fileHandle);
     assert(rc == success && "Opening the file should not fail.");
 
     RID rid;
@@ -45,13 +42,14 @@ int RBFTest_11(RecordBasedFileManager *rbfm) {
     vector<Attribute> recordDescriptor;
     createLargeRecordDescriptor2(recordDescriptor);
 
-    for (unsigned i = 0; i < recordDescriptor.size(); i++) {
-        cout << "Attr Name: " << recordDescriptor[i].name << " Attr Type: " << (AttrType)recordDescriptor[i].type << " Attr Len: " << recordDescriptor[i].length << endl;
+    for (Attribute &i : recordDescriptor) {
+        cout << "Attr Name: " << i.name << " Attr Type: " << (AttrType) i.type
+             << " Attr Len: " << i.length << endl;
     }
 
     // NULL field indicator
     int nullFieldsIndicatorActualSize = getActualByteForNullsIndicator(recordDescriptor.size());
-    unsigned char *nullsIndicator = (unsigned char *) malloc(nullFieldsIndicatorActualSize);
+    auto *nullsIndicator = (unsigned char *) malloc(nullFieldsIndicatorActualSize);
     memset(nullsIndicator, 0, nullFieldsIndicatorActualSize);
 
     vector<RID> rids;
@@ -62,14 +60,14 @@ int RBFTest_11(RecordBasedFileManager *rbfm) {
         int size = 0;
         prepareLargeRecord2(recordDescriptor.size(), nullsIndicator, i, record, &size);
 
-        rc = rbfm->insertRecord(fileHandle, recordDescriptor, record, rid);
+        rc = rbfm.insertRecord(fileHandle, recordDescriptor, record, rid);
         assert(rc == success && "Inserting a record should not fail.");
 
         rids.push_back(rid);
     }
 
     // Close the file
-    rc = rbfm->closeFile(fileHandle);
+    rc = rbfm.closeFile(fileHandle);
     assert(rc == success && "Closing the file should not fail.");
 
     free(record);
@@ -83,32 +81,29 @@ int RBFTest_11(RecordBasedFileManager *rbfm) {
     if (ridsFile.is_open()) {
         ridsFile.seekp(0, ios::beg);
         for (int i = 0; i < numRecords; i++) {
-            ridsFile.write(reinterpret_cast<const char*>(&rids[i].pageNum),
-                    sizeof(unsigned));
-            ridsFile.write(reinterpret_cast<const char*>(&rids[i].slotNum),
-                    sizeof(unsigned));
+            ridsFile.write(reinterpret_cast<const char *>(&rids[i].pageNum),
+                           sizeof(unsigned));
+            ridsFile.write(reinterpret_cast<const char *>(&rids[i].slotNum),
+                           sizeof(unsigned));
             if (i % 1000 == 0) {
                 cout << "RID #" << i << ": " << rids[i].pageNum << ", "
-                        << rids[i].slotNum << endl;
+                     << rids[i].slotNum << endl;
             }
         }
         ridsFile.close();
     }
 
     cout << "RBF Test Case 11 Finished! The result will be examined." << endl << endl;
-
+    free(nullsIndicator);
     return 0;
 }
 
-int main()
-{
+int main() {
     // To test the functionality of the record-based file manager 
-    RecordBasedFileManager *rbfm = RecordBasedFileManager::instance(); 
-     
+    RecordBasedFileManager &rbfm = RecordBasedFileManager::instance();
+
     remove("test11");
     remove("test11rids");
-       
-    RC rcmain = RBFTest_11(rbfm);
 
-    return rcmain;
+    return RBFTest_11(rbfm);
 }

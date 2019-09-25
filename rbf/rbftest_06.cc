@@ -1,27 +1,21 @@
 #include <iostream>
-#include <string>
 #include <cassert>
-#include <sys/stat.h>
-#include <stdlib.h> 
-#include <string.h>
+#include <cstring>
 #include <stdexcept>
-#include <stdio.h> 
 
 #include "pfm.h"
-#include "rbfm.h"
 #include "test_util.h"
 
 using namespace std;
 
-int RBFTest_6(PagedFileManager *pfm)
-{
+int RBFTest_6(PagedFileManager &pfm) {
     // Functions Tested:
     // 1. Open File
     // 2. Write Page
     // 3. Read Page
     // 4. Close File
     // 5. Destroy File
-    cout << endl << "***** In RBF Test Case 6 *****" << endl;
+    cout << endl << "***** In RBF Test Case 06 *****" << endl;
 
     RC rc;
     string fileName = "test3";
@@ -35,23 +29,21 @@ int RBFTest_6(PagedFileManager *pfm)
 
     // Open the file "test3"
     FileHandle fileHandle;
-    rc = pfm->openFile(fileName, fileHandle);
+    rc = pfm.openFile(fileName, fileHandle);
     assert(rc == success && "Opening the file should not fail.");
 
     // collect before counters
     rc = fileHandle.collectCounterValues(readPageCount, writePageCount, appendPageCount);
-    if(rc != success)
-    {
+    if (rc != success) {
         cout << "[FAIL] collectCounterValues() failed. Test Case 6 failed." << endl;
-        rc = pfm->closeFile(fileHandle);
+        pfm.closeFile(fileHandle);
         return -1;
     }
 
     // Update the first page
     void *data = malloc(PAGE_SIZE);
-    for(unsigned i = 0; i < PAGE_SIZE; i++)
-    {
-        *((char *)data+i) = i % 10 + 30;
+    for (unsigned i = 0; i < PAGE_SIZE; i++) {
+        *((char *) data + i) = i % 10 + 30;
     }
     rc = fileHandle.writePage(0, data);
     assert(rc == success && "Writing a page should not fail.");
@@ -63,49 +55,47 @@ int RBFTest_6(PagedFileManager *pfm)
 
     // collect after counters
     rc = fileHandle.collectCounterValues(readPageCount1, writePageCount1, appendPageCount1);
-    if(rc != success)
-    {
+    if (rc != success) {
         cout << "[FAIL] collectCounterValues() failed. Test Case 6 failed." << endl;
-        rc = pfm->closeFile(fileHandle);
+        pfm.closeFile(fileHandle);
         return -1;
     }
-    cout << "before:R W A - " << readPageCount << " " << writePageCount << " " << appendPageCount << " after:R W A - " << readPageCount1 << " " << writePageCount1 << " " << appendPageCount1 << endl;
+    cout << "before:R W A - " << readPageCount << " " << writePageCount << " " << appendPageCount << " after:R W A - "
+         << readPageCount1 << " " << writePageCount1 << " " << appendPageCount1 << endl;
     assert(writePageCount1 > writePageCount && "The writePageCount should have been increased.");
     assert(readPageCount1 > readPageCount && "The readPageCount should have been increased.");
 
     // Check the integrity
     rc = memcmp(data, buffer, PAGE_SIZE);
     assert(rc == success && "Checking the integrity of a page should not fail.");
-    
+
     // Write a non-existing page
     rc = fileHandle.writePage(1, buffer);
     assert(rc != success && "Writing a non-existing page should fail.");
- 
+
     // Close the file "test3"
-    rc = pfm->closeFile(fileHandle);
+    rc = pfm.closeFile(fileHandle);
     assert(rc == success && "Closing the file should not fail.");
 
     free(data);
     free(buffer);
 
     // Destroy the file
-    rc = pfm->destroyFile(fileName);
+    rc = pfm.destroyFile(fileName);
     assert(rc == success && "Destroying the file should not fail.");
 
     rc = destroyFileShouldSucceed(fileName);
-    assert(rc == success  && "Destroying the file should not fail.");
+    assert(rc == success && "Destroying the file should not fail.");
 
-    cout << "RBF Test Case 6 Finished! The result will be examined." << endl << endl;
-    
+    cout << "RBF Test Case 06 Finished! The result will be examined." << endl << endl;
+
     return 0;
-    
+
 }
 
-int main()
-{
+int main() {
     // To test the functionality of the paged file manager
-    PagedFileManager *pfm = PagedFileManager::instance();
-    
-    RC rcmain = RBFTest_6(pfm);
-    return rcmain;
+    PagedFileManager &pfm = PagedFileManager::instance();
+
+    return RBFTest_6(pfm);
 }
