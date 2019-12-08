@@ -575,6 +575,7 @@ int populateLeftTable() {
 
     clean_up:
     free(buf);
+    free(nullsIndicator);
     return rc;
 }
 
@@ -621,6 +622,8 @@ int populateLeftTable2() {
 
     clean_up:
     free(buf);
+    free(nullsIndicator);
+    free(nullsIndicator2);
     return rc;
 }
 
@@ -664,6 +667,8 @@ int populateLeftTable3(vector<RID> &rids) {
 
     clean_up:
     free(buf);
+    free(nullsIndicator);
+    free(nullsIndicator3);
     return rc;
 }
 
@@ -710,6 +715,8 @@ int updateLeftTable3(vector<RID> &rids) {
 
     clean_up:
     free(buf);
+    free(nullsIndicator);
+    free(nullsIndicator3);
     return rc;
 }
 
@@ -747,6 +754,7 @@ int populateLargeLeftTable() {
 
     clean_up:
     free(buf);
+    free(nullsIndicator);
     return rc;
 }
 
@@ -784,6 +792,7 @@ int populateLargeLeftTable2() {
 
     clean_up:
     free(buf);
+    free(nullsIndicator);
     return rc;
 }
 
@@ -820,6 +829,7 @@ int addRecordsToLargeLeftTable2() {
 
     clean_up:
     free(buf);
+    free(nullsIndicator);
     return rc;
 }
 
@@ -857,6 +867,7 @@ int populateRightTable() {
 
     clean_up:
     free(buf);
+    free(nullsIndicator);
     return rc;
 }
 
@@ -894,6 +905,7 @@ int populateLargeRightTable() {
 
     clean_up:
     free(buf);
+    free(nullsIndicator);
     return rc;
 }
 
@@ -931,6 +943,7 @@ int populateLargeRightTable2() {
 
     clean_up:
     free(buf);
+    free(nullsIndicator);
     return rc;
 }
 
@@ -971,6 +984,7 @@ int populateLeftVarCharTable() {
 
     clean_up:
     free(buf);
+    free(nullsIndicator);
     return rc;
 }
 
@@ -1011,6 +1025,7 @@ int populateRightVarCharTable() {
 
     clean_up:
     free(buf);
+    free(nullsIndicator);
     return rc;
 }
 
@@ -1048,6 +1063,7 @@ int populateGroupTable() {
 
     clean_up:
     free(buf);
+    free(nullsIndicator);
     return rc;
 }
 

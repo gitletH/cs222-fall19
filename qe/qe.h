@@ -97,6 +97,7 @@ public:
 
     ~TableScan() override {
         iter->close();
+        delete iter;
     };
 };
 
@@ -161,6 +162,7 @@ public:
 
     ~IndexScan() override {
         iter->close();
+        delete iter;
     };
 };
 
